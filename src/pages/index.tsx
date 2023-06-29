@@ -28,7 +28,7 @@ export default function Home() {
 				<div className="container flex flex-col items-center justify-center gap-12 px-4 py-16 ">
 					<p>WalletConnect</p>
 					<p>Connection ok: {signClient ? "true" : "false"} </p>
-					{signClient && <WalletConnectButton signClient={signClient}></WalletConnectButton>}
+					{signClient && <WalletConnectButton></WalletConnectButton>}
 				</div>
 			</main>
 		</>

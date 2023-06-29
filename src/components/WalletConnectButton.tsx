@@ -4,12 +4,8 @@ import { env } from "../env.mjs";
 import { useWalletConnect } from "../utils/useWalletConnect";
 import { SessionTypes } from "@walletconnect/types";
 
-interface Props {
-	signClient: SignClient;
-}
-
-export default function WalletConnectButton({ signClient }: Props) {
-	const { connect, session, disconnect } = useWalletConnect();
+export default function WalletConnectButton() {
+	const { connect, session, disconnect, client } = useWalletConnect();
 	const [currentSession, setCurrentSession] = useState<SessionTypes.Struct>();
 
 	useEffect(() => {
@@ -18,15 +14,16 @@ export default function WalletConnectButton({ signClient }: Props) {
 	}, [session]);
 
 	useEffect(() => {
-		signClient.on("session_proposal", (event) => {
+		if (!client) return;
+		client.on("session_proposal", (event) => {
 			console.log("TEST_EVENT received!", event);
 			// approveSession(event);
 		});
 
 		return () => {
-			signClient.removeAllListeners("session_proposal");
+			client.removeAllListeners("session_proposal");
 		};
-	}, [signClient]);
+	}, [client]);
 
 	return (
 		<>
@@ -36,7 +33,7 @@ export default function WalletConnectButton({ signClient }: Props) {
 				</button>
 			)}
 			{currentSession && (
-				<button className="bg-red px-10 py-5 rouded text-l" type="button" onClick={() => disconnect()}>
+				<button className="bg-sky-200 px-10 py-5 rouded text-l" type="button" onClick={() => disconnect()}>
 					Disconnect
 				</button>
 			)}
