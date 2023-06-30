@@ -26,40 +26,43 @@ export default function Home() {
 	// 	setCurrentSession(session);
 	// }, [session]);
 
-	const handleGetVC = async () => {
+	const handlePresentEmploymentOffer = async () => {
 		// get vc from server
-		const jwt = await toast.promise(fetchVC(), {
-			pending: "Fetching VC...",
-			success: "VC Fetched!",
-			error: "Error fetching VC",
+		const getFromWallet = await toast.promise(request<{ result: string }>("present_credential", ["employment_offer"]), {
+			error: "Error getting credential to wallet",
+			success: "Credential received!",
+			pending: "Getting credential from wallet...",
 		});
-		const sendToWallet = await toast.promise(request("receive_credential", [jwt]), {
-			error: "Error sending VC to wallet",
-			success: "VC sent to wallet!",
-			pending: "Sending VC to wallet...",
-		});
+		if (getFromWallet.result) {
+			console.log("Got result from wallet");
+			const res = await toast.promise(verify(getFromWallet.result), {
+				error: "Error verifying credential",
+				success: "Credential verified!",
+				pending: "Verifying credential...",
+			});
+			console.log("Got result from server");
+			console.log(res);
+		}
+		// const jwt = await fetchVC();
 		// send vc to wallet
-		console.log(sendToWallet);
 	};
 
-	const fetchVC = async () => {
+	const verify = async (jwt: string) => {
 		const accounts = getAccounts();
 		if (!getAccounts) {
 			throw new Error("No accounts found");
 		}
-		const res = await fetch("/api/issue-uio", {
+		const res = await fetch("/api/verify-udi", {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
 			},
-			body: JSON.stringify({ address: accounts[0] }),
+			body: JSON.stringify({ jwt: jwt }),
 		});
 
 		// Check if the POST was successful
 		if (res.ok) {
-			const { jwt } = (await res.json()) as { jwt: string };
-			console.log(jwt);
-			return jwt;
+			return await res.json();
 		} else {
 			throw new Error(`Request failed with status ${res.status}`);
 		}
@@ -73,7 +76,7 @@ export default function Home() {
 			</Head>
 			<main className="flex min-h-screen flex-col items-center justify-center">
 				<div className="container flex flex-col items-center justify-center gap-12 px-4 py-16 ">
-					<p>UIO</p>
+					<p>UDI</p>
 					<p>Connection: {client ? "Yes" : "No"} </p>
 					<p>Session: {client ? "Yes" : "No"} </p>
 					{client && <WalletConnectButton></WalletConnectButton>}
@@ -81,9 +84,9 @@ export default function Home() {
 						type="button"
 						className="bg-sky-500 px-10 py-5 rouded text-l"
 						title="Get VC"
-						onClick={() => handleGetVC()}
+						onClick={() => handlePresentEmploymentOffer()}
 					>
-						Get VC
+						Present employment offer
 					</button>
 				</div>
 				<ToastContainer position="bottom-right"></ToastContainer>

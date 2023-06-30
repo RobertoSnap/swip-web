@@ -74,13 +74,13 @@ export const useWalletConnect = create<WalletConnectState>()((set, get) => ({
 		return set(() => ({ session: undefined }));
 	},
 	connect: async () => {
-		const walletConnectModal = new WalletConnectModal({
-			projectId: env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID,
-			// `standaloneChains` can also be specified when calling `walletConnectModal.openModal(...)` later on.
-			chains: ["eip155:5"],
-		});
-		let session: SessionTypes.Struct | undefined = undefined;
 		try {
+			const walletConnectModal = new WalletConnectModal({
+				projectId: env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID,
+				// `standaloneChains` can also be specified when calling `walletConnectModal.openModal(...)` later on.
+				chains: ["eip155:5"],
+			});
+			let session: SessionTypes.Struct | undefined = undefined;
 			const client = get().client;
 			if (!client) {
 				throw new Error("Client not initialized");
@@ -90,7 +90,7 @@ export const useWalletConnect = create<WalletConnectState>()((set, get) => ({
 				// Provide the namespaces and chains (e.g. `eip155` for EVM-based chains) we want to use in this session.
 				requiredNamespaces: {
 					eip155: {
-						methods: ["request_credential", "receive_credential"],
+						methods: ["request_credential", "receive_credential", "present_credential"],
 						chains: ["eip155:5"],
 						events: [],
 					},
@@ -102,12 +102,12 @@ export const useWalletConnect = create<WalletConnectState>()((set, get) => ({
 			}
 			session = await approval();
 			walletConnectModal.closeModal();
+			return set({ session });
 		} catch (error) {
 			console.error(error);
 		} finally {
-			walletConnectModal.closeModal();
+			// walletConnectModal.closeModal();
 		}
-		return set({ session });
 	},
 	request: async <T>(method: string, params: any[]) => {
 		const client = get().client;
@@ -134,7 +134,7 @@ export const useWalletConnect = create<WalletConnectState>()((set, get) => ({
 			valid = false;
 		}
 		if (!result) {
-			throw Error("No vp returned");
+			throw Error("No response from wallet");
 		}
 		return result;
 	},

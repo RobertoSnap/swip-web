@@ -35,12 +35,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
 					birthdate: "1990-01-01",
 				},
 				countryofresidence: { "@type": "country", name: "usa" },
-				passport: { dateofissue: "2020-01-01", dateofexpiry: "2025-01-01", issuer: "usa" },
+				passport: { dateofissue: new Date().toISOString().slice(0, 10), dateofexpiry: "2025-01-01", issuer: "usa" },
 				candidatehasrequiredqualifications: true,
 				infocheckedandcorrect: true,
 			},
 		};
-		const SOME_RECEIVER = "0x0";
+		const SOME_RECEIVER = "0xf3beac30c498d9e26865f34fcaa57dbb935b0d74";
 		const audience = `did:ethr:${SOME_RECEIVER}}`; // TODO
 		const jwt = await didJWT.createJWT(
 			{ aud: audience, iat: undefined, sub: address, ...payload },
